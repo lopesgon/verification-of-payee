@@ -1,0 +1,7 @@
+POST http://localhost:8080/v1/verify
+Content-Type: application/json
+
+{
+  "iban": "DE89370400440532013000",
+  "payee": "John Doe"
+}
