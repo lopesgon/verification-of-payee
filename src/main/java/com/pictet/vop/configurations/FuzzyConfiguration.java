@@ -1,6 +1,5 @@
 package com.pictet.vop.configurations;
 
-import org.apache.lucene.search.FuzzyQuery;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,7 +9,7 @@ import com.intuit.fuzzymatcher.component.MatchService;
 public class FuzzyConfiguration {
   
   @Bean
-  public MatchService fuzzySearch() {
+  public MatchService matchService() {
     return new MatchService();
   }
 }   
