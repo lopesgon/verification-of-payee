@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.intuit.fuzzymatcher.component.MatchService;
 import com.pictet.vop.configurations.properties.FuzzyProperties;
