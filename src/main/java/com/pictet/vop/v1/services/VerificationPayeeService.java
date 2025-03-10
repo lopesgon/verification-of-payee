@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -12,6 +14,7 @@ import com.intuit.fuzzymatcher.component.MatchService;
 import com.intuit.fuzzymatcher.domain.Document;
 import com.intuit.fuzzymatcher.domain.Match;
 import com.pictet.vop.configurations.properties.FuzzyProperties;
+import com.pictet.vop.repositories.IbanRepository;
 import com.pictet.vop.utils.FuzzyUtils;
 import com.pictet.vop.v1.dtos.PayeeDTO;
 import com.pictet.vop.v1.dtos.PayeeMatchResultDTO;
@@ -26,9 +29,8 @@ import lombok.extern.log4j.Log4j2;
 @AllArgsConstructor
 @Service
 public class VerificationPayeeService {
-  private static final String PAYEE_QUERY = "SELECT * FROM payee WHERE iban = ?";
 
-  private final JdbcTemplate jdbcTemplate;
+  private final IbanRepository ibanRepository;
   private final MatchService matchService;
   private final FuzzyProperties fuzzyProperties;
 
@@ -36,7 +38,7 @@ public class VerificationPayeeService {
     Document document = buildForPayee(payee);
 
     Map<Document, List<Match<Document>>> result = this.matchService.applyMatch(document,
-        this.findPayeesForIban(payee.iban()));
+        this.findPayeesForIbanAndPrepare(payee.iban()));
 
     result.entrySet().forEach(entry -> {
       entry.getValue().forEach(match -> {
@@ -98,16 +100,14 @@ public class VerificationPayeeService {
         .createDocument();
   }
 
-  private List<Document> findPayeesForIban(IbanType iban) {
+  private List<Document> findPayeesForIbanAndPrepare(IbanType iban) {
     // todo query database to search for payees to match against
     // jdbcTemplate.execute(PAYEE_QUERY);
     // jdbcTemplate.queryForObject(PAYEE_QUERY, Object[].class, iban.toString());
-    return List.of(
-        new Document.Builder("1")
-            .addElement(FuzzyUtils.buildNameElement("John Doe"))
-            .createDocument(),
-        new Document.Builder("2")
-            .addElement(FuzzyUtils.buildNameElement("John Don"))
-            .createDocument());
+    return ibanRepository.findPayeesForIban(iban).stream().map((payee) -> {
+      return new Document.Builder(payee.key())
+          .addElement(FuzzyUtils.buildNameElement(payee.payee().toString()))
+          .createDocument();
+    }).collect(Collectors.toList());
   }
 }
